@@ -5,7 +5,7 @@ import queue
 import webbrowser
 from vosk import Model, KaldiRecognizer
 import sounddevice as sd
-import music_library
+from rapidfuzz import fuzz
 
 
 
@@ -47,34 +47,44 @@ q = queue.Queue()
 def audio_callback(indata, frames, time, status):
     q.put(bytes(indata))
 
+# using a fuzzy maching function instead of strict matching
+def is_match(command, keyword):
+    return fuzz.partial_ratio(command, keyword) > 80
+
 
 # main command processing function
 def process_command(command):
-    if "youtube" in command.lower() or "you tube" in command.lower():
+    command = command.lower()
+    if is_match(command, "youtube"):
         webbrowser.open("https://www.youtube.com")
         speak("Opening YouTube.")
 
-    elif "google" in command.lower():
+    elif is_match(command, "google"):
         webbrowser.open("https://www.google.com")
         speak("Opening Google.")
 
-    elif "github" in command.lower():
+    elif is_match(command, "github"):
         webbrowser.open("https://github.com/naskar-akash?tab=repositories")
         speak("Opening GitHub.")
 
-    elif "chatgpt" in command.lower():
+    elif is_match(command, "chatgpt"):
         webbrowser.open("https://chatgpt.com/")
         speak("Opening ChatGPT.")
 
-    elif "email" in command.lower():
+    elif is_match(command, "email"):
         webbrowser.open("https://mail.google.com/mail/u/0/#inbox")
         speak("Opening Gmail.")
 
-    elif command.lower().startswith("play"):
-        song = " ".join(command.split()[1:])
-        url = f"https://www.youtube.com/results?search_query={song}"
-        webbrowser.open(url)
-        speak(f"Playing {song}.")
+    elif is_match(command.split()[0], "play"):
+        words = command.split()
+
+        if len(words) > 1:
+            song = " ".join(words[1:])
+            url = f"https://www.youtube.com/results?search_query={song}"
+            webbrowser.open(url)
+            speak(f"Playing {song}")
+        else:
+            speak("Please tell me the song name")
     
     elif "stop" in command.lower() or "exit" in command.lower():
         speak("shutting down..")
@@ -88,11 +98,17 @@ def process_command(command):
 wake_words = ["jarvis"]
 activated = False
 
+# cleaning text function 
+def clean_text(text):
+    text = text.lower().strip()
+    text = text.replace("  ", " ")
+    return text
+
 
 
 # main function
 if __name__ == "__main__":
-    speak("Initializing Maa.")
+    speak("Initializing Jarvis.")
 
     try:
         # Start the audio stream and listen for wake word
@@ -106,7 +122,7 @@ if __name__ == "__main__":
                 # waiting for the wake word to activate the assistant
                 if recognizer.AcceptWaveform(data): 
                     result = json.loads(recognizer.Result()) 
-                    text = result.get("text", "")
+                    text = clean_text(result.get("text", ""))
 
                     print("You:", text)
 
