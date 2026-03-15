@@ -12,7 +12,7 @@ def speak(text):
     print("Jarvis:", text)
 
     command = f'''
-    Add-Type –AssemblyName System.Speech;
+    Add-Type -AssemblyName System.Speech;
     $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;
     $speak.Speak("{text}");
     '''
@@ -29,6 +29,8 @@ def load_model():
     return Model(path)
 
 model = load_model()
+if model is None:
+    exit()
 # speech recognition object 
 recognizer = KaldiRecognizer(model, 16000)
 
@@ -83,7 +85,7 @@ if __name__ == "__main__":
                     result = json.loads(recognizer.Result()) 
                     text = result.get("text", "")
 
-                    print("You:", text)
+                    print("Recognized command:", text)
 
                     # wake word detection
                     if not activated and wake_word in text.lower():
@@ -95,7 +97,6 @@ if __name__ == "__main__":
                         if text:
                             process_command(text)
 
-                        activated = False
                         recognizer.Reset()
 
     except KeyboardInterrupt:
@@ -104,8 +105,3 @@ if __name__ == "__main__":
 
     except Exception as e:
         print("Error occurred:", e)
-                        
-            
-
-
-   
