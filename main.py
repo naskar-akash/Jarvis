@@ -1,4 +1,4 @@
-import pyttsx3
+import subprocess
 import json
 import os 
 import queue
@@ -6,53 +6,73 @@ import webbrowser
 from vosk import Model, KaldiRecognizer
 import sounddevice as sd
 
-# Initialize the text-to-speech engine
-engine = pyttsx3.init('sapi5')
+
+# Function to speak text using Windows built-in speech
 def speak(text):
-    print("Jarvis: ", text)
-    engine.say(text)
-    engine.runAndWait()
+    print("Jarvis:", text)
+
+    command = f'''
+    Add-Type –AssemblyName System.Speech;
+    $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;
+    $speak.Speak("{text}");
+    '''
+
+    subprocess.run(["powershell", "-Command", command])
+
 
 # Function to check if the Vosk model is available and load it
 def load_model():
     path = "vosk-model-small-en-us-0.15"
     if not os.path.exists(path):
-        speak("Please download the Vosk model and place it in the project directory.")
+        speak("Please download the Vosk model.")
         return None
-    return path
+    return Model(path)
 
-# Load speech recognition model
-model_path = load_model()
-if model_path:
-    model = Model(model_path)
-
+model = load_model()
 # speech recognition object 
 recognizer = KaldiRecognizer(model, 16000)
 
 # Creating a queue to hold audio data
 q = queue.Queue()
 
+
 # Audio callback function to capture audio data
 def audio_callback(indata, frames, time, status):
     q.put(bytes(indata))
 
+
 # main command processing function
 def process_command(command):
-    print(command)
+    if "youtube" in command.lower():
+        webbrowser.open("https://www.youtube.com")
+        speak("Opening YouTube.")
+
+    elif "google" in command.lower():
+        webbrowser.open("https://www.google.com")
+        speak("Opening Google.")
+    
+    elif "stop" in command.lower() or "exit" in command.lower():
+        speak("shutting down..")
+        os._exit(0)
+
+    else: 
+        speak("I did not understand the command.")
+
 
 # main variables
 wake_word = "jarvis"
 activated = False
 
+
+
 # main function
 if __name__ == "__main__":
-    speak("Initializing Jarvis. Please wait...")
+    speak("Initializing Jarvis.")
 
     try:
         # Start the audio stream and listen for wake word
         with sd.RawInputStream(samplerate=16000, blocksize=8000, dtype='int16', channels=1, callback=audio_callback):
-            speak("Jarvis is ready.")
-            
+            print("Listening...")
 
             while True:
                 # Get audio chunk data from the queue
@@ -70,15 +90,13 @@ if __name__ == "__main__":
                         activated = True
                         speak("Yes, how can I assist you?")
 
-                    data = q.get()
-                    if activated and recognizer.AcceptWaveform(data):
-                        result = json.loads(recognizer.Result())
-                        command = result.get("text", "")
-                        print("You:", command)
+                    # Command listening
+                    elif activated:
+                        if text:
+                            process_command(text)
 
-                        if command:
-                            process_command(command)
-                            activated = False
+                        activated = False
+                        recognizer.Reset()
 
     except KeyboardInterrupt:
         print("\nProgram stopped by user")
