@@ -5,6 +5,8 @@ import queue
 import webbrowser
 from vosk import Model, KaldiRecognizer
 import sounddevice as sd
+import music_library
+
 
 
 # Function to speak text using Windows built-in speech
@@ -14,6 +16,9 @@ def speak(text):
     command = f'''
     Add-Type -AssemblyName System.Speech;
     $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;
+    $speak.SelectVoice("Microsoft Zira Desktop");
+    $speak.Rate = 1;
+    $speak.Volume = 100;
     $speak.Speak("{text}");
     '''
 
@@ -45,13 +50,31 @@ def audio_callback(indata, frames, time, status):
 
 # main command processing function
 def process_command(command):
-    if "youtube" in command.lower():
+    if "youtube" in command.lower() or "you tube" in command.lower():
         webbrowser.open("https://www.youtube.com")
         speak("Opening YouTube.")
 
     elif "google" in command.lower():
         webbrowser.open("https://www.google.com")
         speak("Opening Google.")
+
+    elif "github" in command.lower():
+        webbrowser.open("https://github.com/naskar-akash?tab=repositories")
+        speak("Opening GitHub.")
+
+    elif "chatgpt" in command.lower():
+        webbrowser.open("https://chatgpt.com/")
+        speak("Opening ChatGPT.")
+
+    elif "email" in command.lower():
+        webbrowser.open("https://mail.google.com/mail/u/0/#inbox")
+        speak("Opening Gmail.")
+
+    elif command.lower().startswith("play"):
+        song = " ".join(command.split()[1:])
+        url = f"https://www.youtube.com/results?search_query={song}"
+        webbrowser.open(url)
+        speak(f"Playing {song}.")
     
     elif "stop" in command.lower() or "exit" in command.lower():
         speak("shutting down..")
@@ -62,18 +85,18 @@ def process_command(command):
 
 
 # main variables
-wake_word = "jarvis"
+wake_words = ["jarvis"]
 activated = False
 
 
 
 # main function
 if __name__ == "__main__":
-    speak("Initializing Jarvis.")
+    speak("Initializing Maa.")
 
     try:
         # Start the audio stream and listen for wake word
-        with sd.RawInputStream(samplerate=16000, blocksize=8000, dtype='int16', channels=1, callback=audio_callback):
+        with sd.RawInputStream(samplerate=16000, blocksize=4000, dtype='int16', channels=1, callback=audio_callback):
             print("Listening...")
 
             while True:
@@ -85,18 +108,19 @@ if __name__ == "__main__":
                     result = json.loads(recognizer.Result()) 
                     text = result.get("text", "")
 
-                    print("Recognized command:", text)
+                    print("You:", text)
 
                     # wake word detection
-                    if not activated and wake_word in text.lower():
+                    if not activated and any(word in text.lower() for word in wake_words):
                         activated = True
-                        speak("Yes, how can I assist you?")
+                        speak("Yes, what can I do?")
 
                     # Command listening
                     elif activated:
                         if text:
                             process_command(text)
 
+                        activated = False
                         recognizer.Reset()
 
     except KeyboardInterrupt:
@@ -105,3 +129,5 @@ if __name__ == "__main__":
 
     except Exception as e:
         print("Error occurred:", e)
+
+   
