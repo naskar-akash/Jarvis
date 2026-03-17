@@ -1,54 +1,42 @@
-from speech import speak
+import speech as sp
 import json
 import os 
-import queue
-from vosk import Model, KaldiRecognizer
+from vosk import KaldiRecognizer
 import sounddevice as sd
 from utils import clean_text
 from command import process_command
+from dotenv import load_dotenv
+import time
+from listener import q, load_model, start_stream
 
 
-
-# Function to check if the Vosk model is available and load it
-def load_model():
-    path = "vosk-model-small-en-us-0.15"
-    if not os.path.exists(path):
-        speak("Please download the Vosk model.")
-        return None
-    return Model(path)
-
-model = load_model()
-if model is None:
-    exit()
-# speech recognition object 
-recognizer = KaldiRecognizer(model, 16000)
-
-# Creating a queue to hold audio data
-q = queue.Queue()
-
-
-# Audio callback function to capture audio data
-def audio_callback(indata, frames, time, status):
-    q.put(bytes(indata))
-
-
+load_dotenv() # Loading environment variables
 
 # main variables
-wake_words = ["jarvis"]
+wake_word = os.getenv("WAKE_WORD")
 activated = False
-
 
 
 # main function
 if __name__ == "__main__":
-    speak("Initializing Jarvis.")
+    sp.speak("Initializing Jarvis.")
 
     try:
-        # Start the audio stream and listen for wake word
-        with sd.RawInputStream(samplerate=16000, blocksize=4000, dtype='int16', channels=1, callback=audio_callback):
+        # load vosk model
+        model = load_model()
+        if model is None:
+            sp.speak("Model not found!")
+            exit()
+
+        recognizer = KaldiRecognizer(model, 16000)
+        with start_stream(recognizer):
             print("Listening...")
 
             while True:
+
+                if sp.is_speaking:
+                    continue
+
                 # Get audio chunk data from the queue
                 data = q.get()
 
@@ -60,9 +48,10 @@ if __name__ == "__main__":
                     print("You:", text)
 
                     # wake word detection
-                    if not activated and any(word in text.lower() for word in wake_words):
+                    if not activated and wake_word in text.lower():
                         activated = True
-                        speak("Yes, what can I do?")
+                        sp.speak("Yes, what can I do?")
+                        time.sleep(0.5)
 
                     # Command listening
                     elif activated:
@@ -74,7 +63,7 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("\nProgram stopped by user")
-        speak("Shutting down")
+        sp.speak("Shutting down")
 
     except Exception as e:
         print("Error occurred:", e)

@@ -7,7 +7,5 @@ def is_match(command, keyword):
 
 # cleaning text function 
 def clean_text(text):
-    text = text.lower().strip()
-    text = text.replace("  ", " ")
-    return text
+    return " ".join(text.lower().strip().split())
 
