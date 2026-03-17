@@ -1,9 +1,13 @@
 # Jarvis
 
-Jarvis is a Python-based voice assistant project. It leverages speech recognition and command execution to provide a hands-free assistant experience.
+A simple offline voice assistant built using Python, powered by Vosk (speech recognition) and Windows Text-to-Speech.
+Jarvis listens for a wake word, processes voice commands, and performs actions like opening websites or playing music.
+
+---
 
 ## Features
-- Speech recognition using Vosk
+- offline speech recognition using Vosk
+- wake word detection
 - Command execution
 - Modular code structure
 
@@ -14,28 +18,83 @@ Jarvis is a Python-based voice assistant project. It leverages speech recognitio
 - `command.py` — Contains command logic and execution
 - `utils.py` — Utility functions
 - `vosk-model-small-en-us-0.15/` — Vosk speech recognition model files
+- `.env` - for environment variables
+- `Readme.md`
 
-## Requirements
-- Python 3.7+
-- [Vosk](https://alphacephei.com/vosk/)
+---
 
-## Setup
-1. Create and activate a virtual environment:
-   ```sh
-   python -m venv .venv
-   .venv\Scripts\activate  # On Windows
-   ```
-2. Install dependencies:
-   ```sh
-   pip install vosk
-   ```
-3. Download and extract the Vosk model to the `vosk-model-small-en-us-0.15/` directory if not already present.
+## Tech Stack
 
-## Usage
-Run the assistant:
+- Python 3.14  
+- Vosk (Speech Recognition)  
+- SoundDevice (Audio Input)  
+- RapidFuzz (Fuzzy Matching)  
+- Windows PowerShell (Text-to-Speech)
+
+--- 
+
+## Installation
+
+### 1. Clone the repository
+```sh
+git clone https://github.com/your-username/jarvis.git  
+cd jarvis  
+```
+### 2. Create virtual environment
+```sh
+python -m venv .venv  
+.venv\Scripts\activate  
+```
+### 3. Install dependencies
+```sh
+pip install vosk sounddevice rapidfuzz python-dotenv  
+```
+---
+
+## Download Vosk Model
+
+Download the model from:  
+([https://alphacephei.com/vosk/models](https://alphacephei.com/vosk/models))  
+
+Extract it and place in project folder:
+
+`vosk-model-small-en-us-0.15/`
+
+---
+
+## Environment Variables
+
+Create a `.env` file:
+
+  WAKE_WORD=your_wake_word 
+
+---
+
+## Run the assistant
 ```sh
 python main.py
 ```
 
-## License
-MIT License
+---
+
+## How It Works
+
+1. Jarvis listens continuously via microphone  
+2. Detects wake word (`jarvis`)  
+3. Activates and listens for a command  
+4. Processes command using fuzzy matching  
+5. Executes action (open website, play music, etc.)  
+
+---
+
+## Known Issues
+
+- May detect its own voice (feedback loop)  
+- Works best with headphones 🎧  
+- Windows-only TTS (PowerShell-based)  
+
+---
+
+## Author
+
+ Developed by Akash Naskar
