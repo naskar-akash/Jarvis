@@ -10,12 +10,14 @@ Jarvis listens for a wake word, processes voice commands, and performs actions l
 - wake word detection
 - Command execution
 - Modular code structure
+- AI powered voice assistance with chatgpt integration
 
 ## Project Structure
 - `main.py` — Entry point for the assistant
 - `listener.py` — Handles audio input and speech recognition
 - `speech.py` — Manages text-to-speech and audio output
 - `command.py` — Contains command logic and execution
+- `chatgpt.py` - Chatgpt integration to make assistance more smarter
 - `utils.py` — Utility functions
 - `vosk-model-small-en-us-0.15/` — Vosk speech recognition model files
 - `.env` - for environment variables
@@ -30,6 +32,7 @@ Jarvis listens for a wake word, processes voice commands, and performs actions l
 - SoundDevice (Audio Input)  
 - RapidFuzz (Fuzzy Matching)  
 - Windows PowerShell (Text-to-Speech)
+- OpenAI (AI integration)
 
 --- 
 
@@ -67,6 +70,7 @@ Extract it and place in project folder:
 Create a `.env` file:
 
   WAKE_WORD=your_wake_word 
+  OPENAI_API_KEY=your_openai_api_key
 
 ---
 
