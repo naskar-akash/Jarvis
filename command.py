@@ -50,7 +50,7 @@ def process_command(command):
         
 
     # AI integration
-    if command and (command.startswith("tell") or is_match(command.split()[0], "tell")):
+    if command:
         response = ask_chatgpt(command)
         sp.speak(response)
 
