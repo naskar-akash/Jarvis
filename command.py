@@ -1,13 +1,14 @@
 import webbrowser
 import os
 from utils import is_match
-from speech import speak
+import speech as sp
+from chatgpt import ask_chatgpt
 
 
 # function to open the website through key word
 def open_website(url, name):
     webbrowser.open(url)
-    speak(f"Openning {name}")
+    sp.speak(f"Openning {name}")
 
 # function to play music
 def play_music(command):
@@ -15,13 +16,18 @@ def play_music(command):
     if song:
         url = f"https://www.youtube.com/results?search_query={song}"
         webbrowser.open(url)
-        speak(f"Playing {song}")
+        sp.speak(f"Playing {song}")
     else:
-        speak("Please tell me the song name")
+        sp.speak("Please tell me the song name")
 
 # main function to process the commands
 def process_command(command):
     command = command.lower()
+
+    # Exit
+    if "stop" in command or "exit" in command:
+        sp.speak("Shutting down")
+        os._exit(0)
 
     actions = [
         ("youtube", lambda: open_website("https://www.youtube.com", "Youtube")),
@@ -38,15 +44,16 @@ def process_command(command):
             return
         
     # Handle PLAY separately
-    if command.startswith("play") or is_match(command.split()[0], "play"):
+    if command and (command.startswith("play") or is_match(command.split()[0], "play")):
         play_music(command)
         return
         
-    # Exit
-    if "stop" in command or "exit" in command:
-        speak("Shutting down")
-        os._exit(0)
 
+    # AI integration
+    if command and (command.startswith("tell") or is_match(command.split()[0], "tell")):
+        response = ask_chatgpt(command)
+        sp.speak(response)
 
     # Default fallback
-    speak("I did not understand the command.")
+    else:
+        sp.speak("I did not understand the command.")
