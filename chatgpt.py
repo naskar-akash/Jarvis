@@ -1,4 +1,4 @@
-from openai import OpenAI
+from ai_model import OpenAI
 import os
 from dotenv import load_dotenv
 import speech as sp
