@@ -51,7 +51,7 @@ if __name__ == "__main__":
                     if not activated and wake_word in text.lower():
                         activated = True
                         sp.speak("Yes, what can I do?")
-                        time.sleep(0.5)
+                        time.sleep(2.0)  # Short pause to allow the user to start speaking after activation
 
                     # Command listening
                     elif activated:
